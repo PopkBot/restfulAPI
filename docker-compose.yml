@@ -1,0 +1,68 @@
+version: '3.8'
+services:
+
+  web:
+    profiles: ["default"]
+    ports:
+      - "8080:8080"
+    build: .
+    container_name: restfulAPI
+    depends_on:
+      - db
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+        delay: 10s
+    environment:
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/db
+
+
+  db:
+    image: postgres
+    profiles: ["default"]
+    container_name: db
+    ports:
+      - "8081:5432"
+    volumes:
+      - /var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=db
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+
+
+  web_test:
+    profiles: ["test"]
+    ports:
+      - "8090:8090"
+    build: .
+    container_name: restfulAPI-test
+    depends_on:
+      - db_test
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+        delay: 10s
+    environment:
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_test:5432/db_test
+
+
+  db_test:
+    image: postgres
+    profiles: ["test"]
+    container_name: db-test
+    ports:
+      - "8091:5432"
+    volumes:
+      - /var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=db_test
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+
